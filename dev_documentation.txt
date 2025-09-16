@@ -550,3 +550,40 @@ The Style Weaver MVP demonstrates the complete AI-powered fashion styling workfl
 - Professional user experience with smooth interactions
 
 The system is production-ready and can be deployed immediately for user testing and feedback. The architecture is scalable and extensible for future enhancements.
+
+---
+
+## Assets Folder Organization - September 16, 2025
+
+**Date:** Tuesday, September 16, 2025
+**Task:** Create and organize assets folder for clothing images
+
+### Changes Made:
+
+1. **Created Assets Folder Structure:**
+   - Created `/assets/` folder in the project root directory
+   - Organized clothing image files in a dedicated location for better project structure
+
+2. **Image Files Added:**
+   - `white_tee.jpg` - Classic white cotton crewneck t-shirt
+   - `black_hoodie.jpg` - Comfortable black oversized hoodie  
+   - `blue_jeans.jpg` - Dark wash slim-fit denim jeans
+   - `khaki_chinos.jpg` - Light brown khaki chinos
+
+3. **Code Updates:**
+   - Updated `app/db_seeder.py` to reference images from the new assets folder
+   - Changed image URLs from placeholder "url/to/" paths to proper "assets/" paths
+   - Updated all 4 clothing item references to use the new asset structure
+
+4. **Project Structure Benefits:**
+   - Improved organization with dedicated assets folder
+   - Clear separation between code, templates, static files, and assets
+   - Easier asset management and deployment preparation
+   - Better maintainability for future image additions
+
+### Files Modified:
+- `app/db_seeder.py` - Updated image URL references
+- Created new folder: `/assets/`
+- Added 4 placeholder image files
+
+The assets folder is now ready for actual clothing images to be placed, replacing the placeholder files as needed for production use.
