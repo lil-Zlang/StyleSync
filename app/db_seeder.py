@@ -76,27 +76,38 @@ def seed_weaviate() -> bool:
                 "type": "bottom", 
                 "style_tags": ["business-casual", "preppy"]
             },
-                {
+            {
                 "item_id": "top_03", 
                 "image_url": "https://raw.githubusercontent.com/lil-Zlang/StyleSync/main/assets/hacker_tee.jpg", 
-                "description": "hacker tee.", 
+                "description": "A black hacker tee with tech-inspired graphics.", 
                 "type": "top", 
-                "style_tags": ["hackers-casual", "cozy"]
+                "style_tags": ["tech", "hacker", "casual", "edgy"]
             }
         ]
         
         # Connect to Weaviate
         weaviate_url = os.getenv('WEAVIATE_URL', 'http://localhost:8080')
         weaviate_api_key = os.getenv('WEAVIATE_API_KEY')
+        weaviate_hostname = os.getenv('WEAVIATE_HOSTNAME')
         
         # Create Weaviate client
-        if weaviate_api_key:
+        if weaviate_api_key and weaviate_hostname:
+            # Cloud configuration
+            auth_config = AuthApiKey(api_key=weaviate_api_key)
+            client = weaviate.Client(
+                url=f"https://{weaviate_hostname}",
+                auth_client_secret=auth_config
+            )
+            weaviate_url = f"https://{weaviate_hostname}"  # Update for logging
+        elif weaviate_api_key:
+            # Local with API key
             auth_config = AuthApiKey(api_key=weaviate_api_key)
             client = weaviate.Client(
                 url=weaviate_url,
                 auth_client_secret=auth_config
             )
         else:
+            # Local without API key
             client = weaviate.Client(url=weaviate_url)
         
         logger.info(f"Connected to Weaviate at {weaviate_url}")
@@ -106,72 +117,36 @@ def seed_weaviate() -> bool:
             logger.error("Weaviate client is not ready")
             return False
         
-        # Define ClothingItem class schema
+        # Define ClothingItem class schema (no vectorizer for local)
         clothing_item_schema = {
             "class": "ClothingItem",
             "description": "A clothing item in the user's wardrobe",
-            "vectorizer": "text2vec-transformers",
-            "moduleConfig": {
-                "text2vec-transformers": {
-                    "poolingStrategy": "masked_mean",
-                    "vectorizeClassName": False
-                }
-            },
+            "vectorizer": "none",
             "properties": [
                 {
                     "name": "item_id",
                     "dataType": ["text"],
-                    "description": "Unique identifier for the clothing item",
-                    "moduleConfig": {
-                        "text2vec-transformers": {
-                            "skip": True,
-                            "vectorizePropertyName": False
-                        }
-                    }
+                    "description": "Unique identifier for the clothing item"
                 },
                 {
                     "name": "image_url",
                     "dataType": ["text"],
-                    "description": "URL to the clothing item image",
-                    "moduleConfig": {
-                        "text2vec-transformers": {
-                            "skip": True,
-                            "vectorizePropertyName": False
-                        }
-                    }
+                    "description": "URL to the clothing item image"
                 },
                 {
                     "name": "description",
                     "dataType": ["text"],
-                    "description": "Detailed description of the clothing item",
-                    "moduleConfig": {
-                        "text2vec-transformers": {
-                            "skip": False,
-                            "vectorizePropertyName": False
-                        }
-                    }
+                    "description": "Detailed description of the clothing item"
                 },
                 {
                     "name": "type",
                     "dataType": ["text"],
-                    "description": "Type of clothing (top, bottom, outerwear, etc.)",
-                    "moduleConfig": {
-                        "text2vec-transformers": {
-                            "skip": False,
-                            "vectorizePropertyName": False
-                        }
-                    }
+                    "description": "Type of clothing (top, bottom, outerwear, etc.)"
                 },
                 {
                     "name": "style_tags",
                     "dataType": ["text[]"],
-                    "description": "Style tags associated with the item",
-                    "moduleConfig": {
-                        "text2vec-transformers": {
-                            "skip": False,
-                            "vectorizePropertyName": False
-                        }
-                    }
+                    "description": "Style tags associated with the item"
                 }
             ]
         }
@@ -250,6 +225,10 @@ def seed_neo4j() -> bool:
             "Minimalist Chic": {
                 "garments": ["crewneck t-shirt", "chinos", "blazer"],
                 "vibes": ["clean", "simple", "professional", "timeless"]
+            },
+            "Hacker Mode": {
+                "garments": ["hacker tee", "denim jeans", "hoodie"],
+                "vibes": ["tech", "casual", "edgy", "modern"]
             }
         }
         

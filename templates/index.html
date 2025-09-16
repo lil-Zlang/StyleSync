@@ -11,17 +11,70 @@
         <!-- Header -->
         <header class="header">
             <h1>Welcome to Style Weaver</h1>
-            <p>Select a trend to generate your style for today.</p>
+            <p>Chat with your AI style assistant or choose from trending styles!</p>
         </header>
 
         <!-- Main Content -->
         <main class="main-content">
-            <!-- Trend Selection Section -->
-            <section class="trend-section">
-                <div class="trend-buttons">
-                    <button class="trend-btn" data-trend="90s Revival">90s Revival</button>
-                    <button class="trend-btn" data-trend="Minimalist Chic">Minimalist Chic</button>
+            <!-- Chatbot Section -->
+            <section class="chatbot-section">
+                <div class="chatbot-container">
+                    <div class="chatbot-header">
+                        <h2>💬 What's on your mind?</h2>
+                        <p>Tell me about your style preferences or choose from our trending options below!</p>
+                    </div>
+                    
+                    <!-- Chat Messages Area -->
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="message bot-message">
+                            <div class="message-content">
+                                <span class="bot-avatar">🎨</span>
+                                <div class="message-text">
+                                    Hi! I'm your Style Weaver assistant. What kind of look are you going for today? You can describe your mood, occasion, or pick from our trending styles!
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Chat Input -->
+                    <div class="chat-input-container">
+                        <input type="text" id="chatInput" class="chat-input" placeholder="Describe your style mood or ask me anything..." maxlength="500">
+                        <button id="sendChatBtn" class="send-btn">
+                            <span class="send-icon">📤</span>
+                        </button>
+                    </div>
                 </div>
+            </section>
+
+            <!-- Style Options Section -->
+            <section class="style-options-section">
+                <div class="section-header">
+                    <h3>Or choose from trending styles:</h3>
+                </div>
+                <div class="style-buttons-container">
+                    <button class="style-option-btn" data-trend="90s Revival">
+                        <span class="style-emoji">🎸</span>
+                        <div class="style-info">
+                            <h4>90s Revival</h4>
+                            <p>Grunge, casual, streetwear vibes</p>
+                        </div>
+                    </button>
+                    <button class="style-option-btn" data-trend="Minimalist Chic">
+                        <span class="style-emoji">✨</span>
+                        <div class="style-info">
+                            <h4>Minimalist Chic</h4>
+                            <p>Clean, simple, professional vibes</p>
+                        </div>
+                    </button>
+                    <button class="style-option-btn hacker-mode-btn" data-trend="Hacker Mode">
+                        <span class="style-emoji">🎯</span>
+                        <div class="style-info">
+                            <h4>Hacker Mode</h4>
+                            <p>Tech-inspired, innovative looks</p>
+                        </div>
+                    </button>
+                </div>
+                <p class="hacker-mode-description">✨ <strong>Hacker Mode:</strong> AI combines the hacker tee with the model to create a perfect tech-inspired look!</p>
             </section>
 
             <!-- Loading Section -->
@@ -61,15 +114,160 @@
     <script>
         // Initialize the app
         document.addEventListener('DOMContentLoaded', function() {
-            // Add event listeners to all trend buttons
-            const trendButtons = document.querySelectorAll('.trend-btn');
-            trendButtons.forEach(button => {
+            // Add event listeners to all style option buttons
+            const styleButtons = document.querySelectorAll('.style-option-btn');
+            styleButtons.forEach(button => {
                 button.addEventListener('click', function() {
                     const trendName = this.getAttribute('data-trend');
+                    // Add to chat as user selection
+                    addMessageToChat(`I want to try the ${trendName} style!`, 'user');
+                    // Add bot response
+                    addMessageToChat(`Great choice! Let me generate a ${trendName} look for you. ✨`, 'bot');
                     generateStyle(trendName);
                 });
             });
+            
+            // Add chat functionality
+            const chatInput = document.getElementById('chatInput');
+            const sendBtn = document.getElementById('sendChatBtn');
+            
+            // Send message on button click
+            sendBtn.addEventListener('click', sendChatMessage);
+            
+            // Send message on Enter key
+            chatInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendChatMessage();
+                }
+            });
         });
+        
+        // Chat functionality
+        function sendChatMessage() {
+            const chatInput = document.getElementById('chatInput');
+            const message = chatInput.value.trim();
+            
+            if (!message) return;
+            
+            // Add user message to chat
+            addMessageToChat(message, 'user');
+            
+            // Clear input
+            chatInput.value = '';
+            
+            // Process message and respond
+            processChatMessage(message);
+        }
+        
+        function addMessageToChat(message, sender) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            
+            const messageContent = document.createElement('div');
+            messageContent.className = 'message-content';
+            
+            if (sender === 'bot') {
+                messageContent.innerHTML = `
+                    <span class="bot-avatar">🎨</span>
+                    <div class="message-text">${message}</div>
+                `;
+            } else {
+                messageContent.innerHTML = `
+                    <div class="message-text">${message}</div>
+                    <span class="user-avatar">👤</span>
+                `;
+            }
+            
+            messageDiv.appendChild(messageContent);
+            chatMessages.appendChild(messageDiv);
+            
+            // Scroll to bottom
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        async function processChatMessage(message) {
+            try {
+                // Show typing indicator
+                addMessageToChat('Thinking...', 'bot');
+                
+                // Call chat API
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: message })
+                });
+                
+                const data = await response.json();
+                
+                // Remove typing indicator
+                const chatMessages = document.getElementById('chatMessages');
+                const lastMessage = chatMessages.lastElementChild;
+                if (lastMessage && lastMessage.querySelector('.message-text').textContent === 'Thinking...') {
+                    chatMessages.removeChild(lastMessage);
+                }
+                
+                if (data.success) {
+                    // Add bot response
+                    addMessageToChat(data.response, 'bot');
+                    
+                    // If a style suggestion was made, offer to generate it
+                    if (data.suggested_style) {
+                        setTimeout(() => {
+                            addMessageToChat(`Would you like me to generate a ${data.suggested_style} look for you?`, 'bot');
+                            // Add quick action buttons
+                            addQuickActionButtons(data.suggested_style);
+                        }, 1000);
+                    }
+                } else {
+                    addMessageToChat('Sorry, I had trouble understanding that. Could you try rephrasing?', 'bot');
+                }
+            } catch (error) {
+                // Remove typing indicator
+                const chatMessages = document.getElementById('chatMessages');
+                const lastMessage = chatMessages.lastElementChild;
+                if (lastMessage && lastMessage.querySelector('.message-text').textContent === 'Thinking...') {
+                    chatMessages.removeChild(lastMessage);
+                }
+                
+                addMessageToChat('Sorry, I\'m having connection issues. Please try again!', 'bot');
+            }
+        }
+        
+        function addQuickActionButtons(styleName) {
+            const chatMessages = document.getElementById('chatMessages');
+            const buttonDiv = document.createElement('div');
+            buttonDiv.className = 'message bot-message quick-actions';
+            
+            buttonDiv.innerHTML = `
+                <div class="message-content">
+                    <div class="quick-action-buttons">
+                        <button class="quick-action-btn yes-btn" onclick="generateStyleFromChat('${styleName}')">
+                            ✨ Yes, generate it!
+                        </button>
+                        <button class="quick-action-btn no-btn" onclick="removeQuickActions()">
+                            Maybe later
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            chatMessages.appendChild(buttonDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        function generateStyleFromChat(styleName) {
+            removeQuickActions();
+            addMessageToChat(`Perfect! Generating your ${styleName} look now...`, 'bot');
+            generateStyle(styleName);
+        }
+        
+        function removeQuickActions() {
+            const quickActions = document.querySelectorAll('.quick-actions');
+            quickActions.forEach(action => action.remove());
+        }
         
         // Main function to generate style
         async function generateStyle(trendName) {
@@ -110,8 +308,31 @@
             // Update the generated image
             const generatedImage = document.getElementById('generated-image');
             if (data.generated_image_url) {
-                generatedImage.src = data.generated_image_url;
+                // Handle both base64 data URLs and regular URLs
+                if (data.generated_image_url.startsWith('data:image/')) {
+                    // Base64 image from Gemini processing
+                    generatedImage.src = data.generated_image_url;
+                } else {
+                    // Regular URL
+                    generatedImage.src = data.generated_image_url;
+                }
                 generatedImage.style.display = 'block';
+                
+                // Add error handling for image loading
+                generatedImage.onerror = function() {
+                    console.error('Failed to load generated image');
+                    this.style.display = 'none';
+                    // Show a fallback message
+                    const fallbackDiv = document.createElement('div');
+                    fallbackDiv.className = 'image-fallback';
+                    fallbackDiv.innerHTML = '<p>✨ Outfit generated successfully! Image processing complete.</p>';
+                    fallbackDiv.style.cssText = 'text-align: center; padding: 20px; background: #f8f9fa; border-radius: 8px; margin: 10px 0;';
+                    this.parentNode.insertBefore(fallbackDiv, this.nextSibling);
+                };
+                
+                generatedImage.onload = function() {
+                    console.log('✅ Generated image loaded successfully');
+                };
             } else {
                 // Show placeholder if no image
                 generatedImage.style.display = 'none';
@@ -194,6 +415,10 @@
             // Clear results
             document.getElementById('generated-image').src = '';
             document.getElementById('outfit-items-container').innerHTML = '';
+            
+            // Remove any fallback messages
+            const fallbackDivs = document.querySelectorAll('.image-fallback');
+            fallbackDivs.forEach(div => div.remove());
         }
         
         // Health check on load

@@ -146,6 +146,174 @@ def health_check():
     })
 
 
+@main.route('/api/chat', methods=['POST'])
+def chat():
+    """
+    Chat endpoint for conversational style assistance.
+    
+    Expected JSON payload:
+    {
+        "message": "user message"
+    }
+    
+    Returns:
+        JSON: Bot response with optional style suggestion
+    """
+    try:
+        # Get message from request
+        data = request.get_json()
+        if not data or 'message' not in data:
+            logger.warning("Invalid request: missing message parameter")
+            return jsonify({
+                "success": False,
+                "error": "Missing 'message' parameter in request body"
+            }), 400
+        
+        user_message = data['message'].strip()
+        logger.info(f"💬 Processing chat message: {user_message}")
+        
+        # Process the message and generate response
+        response_data = process_chat_message(user_message)
+        
+        return jsonify(response_data)
+        
+    except Exception as e:
+        logger.error(f"Unexpected error in chat endpoint: {str(e)}")
+        return jsonify({
+            "success": False,
+            "error": "Internal server error",
+            "message": str(e)
+        }), 500
+
+
+def process_chat_message(message):
+    """
+    Process user chat message and generate appropriate response.
+    
+    Args:
+        message (str): User's message
+        
+    Returns:
+        dict: Response data with bot message and optional style suggestion
+    """
+    message_lower = message.lower()
+    
+    # Style-related keywords and responses
+    style_keywords = {
+        '90s': {
+            'style': '90s Revival',
+            'responses': [
+                "I love the 90s vibe! Think grunge, oversized flannels, and that effortlessly cool streetwear aesthetic. 🎸",
+                "90s Revival is all about that nostalgic, rebellious spirit with baggy jeans and vintage tees! ✨",
+                "The 90s Revival style brings back that iconic grunge and hip-hop influenced look! 🎯"
+            ]
+        },
+        'grunge': {
+            'style': '90s Revival',
+            'responses': [
+                "Grunge is such a timeless look! Perfect for that edgy, laid-back 90s Revival style. 🎸",
+                "Love the grunge aesthetic! It's a key part of our 90s Revival trend. 🔥"
+            ]
+        },
+        'minimalist': {
+            'style': 'Minimalist Chic',
+            'responses': [
+                "Minimalist Chic is perfect for that clean, sophisticated look! ✨",
+                "I love minimalist style - it's all about quality pieces and timeless elegance! 💎",
+                "Minimalist Chic focuses on simple, refined pieces that make a statement through subtlety! 🌟"
+            ]
+        },
+        'clean': {
+            'style': 'Minimalist Chic',
+            'responses': [
+                "A clean aesthetic sounds perfect for Minimalist Chic! Think simple lines and neutral colors. ✨",
+                "Clean and simple - that's the essence of Minimalist Chic style! 💫"
+            ]
+        },
+        'professional': {
+            'style': 'Minimalist Chic',
+            'responses': [
+                "For a professional look, Minimalist Chic is ideal - sophisticated yet approachable! 👔",
+                "Professional style with a modern twist? Minimalist Chic has you covered! ✨"
+            ]
+        },
+        'tech': {
+            'style': 'Hacker Mode',
+            'responses': [
+                "Tech-inspired fashion? Hacker Mode is perfect - it's all about that innovative, digital aesthetic! 🎯",
+                "Hacker Mode combines tech culture with street style for a truly unique look! 💻",
+                "Love the tech vibe! Hacker Mode creates that perfect intersection of innovation and style! ⚡"
+            ]
+        },
+        'hacker': {
+            'style': 'Hacker Mode',
+            'responses': [
+                "Hacker Mode is our most innovative style - tech-inspired looks that make a statement! 🎯",
+                "The Hacker Mode aesthetic is all about that cutting-edge, digital nomad vibe! 💻"
+            ]
+        },
+        'innovative': {
+            'style': 'Hacker Mode',
+            'responses': [
+                "Innovative style calls for Hacker Mode - where technology meets fashion! ⚡",
+                "For something truly innovative, try Hacker Mode - it's our most unique aesthetic! 🚀"
+            ]
+        }
+    }
+    
+    # Mood-based responses
+    mood_keywords = {
+        'casual': "For a casual day, I'd recommend something comfortable yet stylish! What kind of casual are you thinking - laid-back grunge or clean minimalist? 😊",
+        'formal': "For formal occasions, Minimalist Chic offers that perfect sophisticated elegance! 👔",
+        'creative': "Feeling creative? Hacker Mode might be perfect for expressing your innovative side! 🎨",
+        'confident': "Confidence looks good in any style! What aesthetic matches your confident mood today? 💪",
+        'relaxed': "For a relaxed vibe, 90s Revival offers that perfect laid-back, effortless cool! 😌",
+        'edgy': "Edgy style calls for some 90s Revival grunge vibes! 🔥",
+        'sophisticated': "Sophisticated style is exactly what Minimalist Chic delivers! ✨"
+    }
+    
+    # Check for style keywords
+    suggested_style = None
+    response = None
+    
+    for keyword, info in style_keywords.items():
+        if keyword in message_lower:
+            suggested_style = info['style']
+            import random
+            response = random.choice(info['responses'])
+            break
+    
+    # Check for mood keywords if no style match
+    if not response:
+        for keyword, mood_response in mood_keywords.items():
+            if keyword in message_lower:
+                response = mood_response
+                break
+    
+    # Greeting responses
+    greetings = ['hi', 'hello', 'hey', 'good morning', 'good afternoon', 'good evening']
+    if not response and any(greeting in message_lower for greeting in greetings):
+        response = "Hey there! 👋 I'm excited to help you find your perfect style today! What kind of look are you going for? Casual, formal, or something unique? 🎨"
+    
+    # Question responses
+    questions = ['what', 'how', 'why', 'when', 'where', 'which']
+    if not response and any(q in message_lower for q in questions):
+        if 'style' in message_lower or 'fashion' in message_lower:
+            response = "Great question! I can help you explore different styles based on your mood, occasion, or personal preferences. Try describing how you want to feel or look! ✨"
+        else:
+            response = "That's an interesting question! I'm here to help with style and fashion advice. What kind of look are you trying to achieve? 🎨"
+    
+    # Default response
+    if not response:
+        response = "I love your style curiosity! 💫 Tell me more about what you're looking for - are you feeling more casual, professional, or want to try something completely different? I'm here to help you find the perfect look! ✨"
+    
+    return {
+        "success": True,
+        "response": response,
+        "suggested_style": suggested_style
+    }
+
+
 @main.route('/api/trends', methods=['GET'])
 def get_available_trends():
     """
@@ -203,6 +371,10 @@ def get_available_trends():
                 {
                     "name": "Minimalist Chic", 
                     "description": "A style with clean, simple, professional vibes"
+                },
+                {
+                    "name": "Hacker Mode",
+                    "description": "A style with tech-inspired, innovative vibes"
                 }
             ]
         

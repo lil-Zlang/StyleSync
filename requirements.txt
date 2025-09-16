@@ -8,7 +8,7 @@ weaviate-client==4.4.0
 neo4j==5.15.0
 
 # AI/ML libraries
-google-generativeai==0.3.2
+google-generativeai>=0.8.0
 
 # Strands Agents (Note: This may need to be installed from source or specific repository)
 # strands-agents
