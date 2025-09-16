@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Style Weaver</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>Welcome to Style Weaver</h1>
+            <p>Select a trend to generate your style for today.</p>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Trend Selection Section -->
+            <section class="trend-section">
+                <div class="trend-buttons">
+                    <button class="trend-btn" data-trend="90s Revival">90s Revival</button>
+                    <button class="trend-btn" data-trend="Minimalist Chic">Minimalist Chic</button>
+                </div>
+            </section>
+
+            <!-- Loading Section -->
+            <section class="loading-section" id="loadingIndicator" style="display: none;">
+                <div class="loading-spinner"></div>
+                <p class="loading-text">Generating your perfect style...</p>
+            </section>
+
+            <!-- Results Section -->
+            <section class="results-section" id="resultsSection" style="display: none;">
+                <div class="generated-image-container">
+                    <img id="generated-image" alt="Generated Style Board" class="generated-image">
+                </div>
+                
+                <div class="outfit-details">
+                    <h2>You will need:</h2>
+                    <div id="outfit-items-container" class="outfit-items-container">
+                        <!-- Individual clothing item images will be added here -->
+                    </div>
+                </div>
+                
+                <button class="try-another-btn" onclick="resetApp()">Try Another Trend</button>
+            </section>
+
+            <!-- Error Section -->
+            <section class="error-section" id="errorSection" style="display: none;">
+                <div class="error-message">
+                    <h3>Oops! Something went wrong</h3>
+                    <p id="errorText"></p>
+                    <button class="try-again-btn" onclick="resetApp()">Try Again</button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add event listeners to all trend buttons
+            const trendButtons = document.querySelectorAll('.trend-btn');
+            trendButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const trendName = this.getAttribute('data-trend');
+                    generateStyle(trendName);
+                });
+            });
+        });
+        
+        // Main function to generate style
+        async function generateStyle(trendName) {
+            console.log('🎨 Generating style for trend:', trendName);
+            
+            // Show loading indicator
+            showLoadingIndicator();
+            
+            try {
+                // Make API call to generate style
+                const response = await fetch('/api/generate-style', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ trend_name: trendName })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayResults(data);
+                } else {
+                    showError(data.message || data.error || 'Failed to generate style');
+                }
+            } catch (error) {
+                console.error('Error generating style:', error);
+                showError('Failed to connect to the server. Please try again.');
+            } finally {
+                hideLoadingIndicator();
+            }
+        }
+        
+        // Display the results
+        function displayResults(data) {
+            console.log('📊 Displaying results:', data);
+            
+            // Update the generated image
+            const generatedImage = document.getElementById('generated-image');
+            if (data.generated_image_url) {
+                generatedImage.src = data.generated_image_url;
+                generatedImage.style.display = 'block';
+            } else {
+                // Show placeholder if no image
+                generatedImage.style.display = 'none';
+            }
+            
+            // Clear and populate outfit items container
+            const outfitItemsContainer = document.getElementById('outfit-items-container');
+            outfitItemsContainer.innerHTML = '';
+            
+            if (data.outfit_items && data.outfit_items.length > 0) {
+                data.outfit_items.forEach(item => {
+                    // Create outfit item element
+                    const itemElement = document.createElement('div');
+                    itemElement.className = 'outfit-item';
+                    
+                    // Create item image
+                    const itemImage = document.createElement('img');
+                    itemImage.src = item.image_url || 'https://via.placeholder.com/150x200/f8f9fa/333333?text=' + encodeURIComponent(item.type || 'Item');
+                    itemImage.alt = item.description || 'Fashion item';
+                    itemImage.className = 'outfit-item-image';
+                    
+                    // Create item description
+                    const itemDescription = document.createElement('p');
+                    itemDescription.className = 'outfit-item-description';
+                    itemDescription.textContent = item.description || 'Fashion item';
+                    
+                    // Add elements to item container
+                    itemElement.appendChild(itemImage);
+                    itemElement.appendChild(itemDescription);
+                    
+                    // Add item to container
+                    outfitItemsContainer.appendChild(itemElement);
+                });
+            } else {
+                // Show message if no items found
+                const noItemsMessage = document.createElement('p');
+                noItemsMessage.className = 'no-items-message';
+                noItemsMessage.textContent = 'No matching items found in your wardrobe for this trend.';
+                outfitItemsContainer.appendChild(noItemsMessage);
+            }
+            
+            // Show results section
+            showSection('resultsSection');
+        }
+        
+        // Show loading indicator
+        function showLoadingIndicator() {
+            document.getElementById('loadingIndicator').style.display = 'block';
+            hideSection('resultsSection');
+            hideSection('errorSection');
+        }
+        
+        // Hide loading indicator
+        function hideLoadingIndicator() {
+            document.getElementById('loadingIndicator').style.display = 'none';
+        }
+        
+        // Show error message
+        function showError(message) {
+            document.getElementById('errorText').textContent = message;
+            showSection('errorSection');
+        }
+        
+        // Show specific section
+        function showSection(sectionId) {
+            document.getElementById(sectionId).style.display = 'block';
+        }
+        
+        // Hide specific section
+        function hideSection(sectionId) {
+            document.getElementById(sectionId).style.display = 'none';
+        }
+        
+        // Reset app to initial state
+        function resetApp() {
+            hideSection('resultsSection');
+            hideSection('errorSection');
+            hideLoadingIndicator();
+            
+            // Clear results
+            document.getElementById('generated-image').src = '';
+            document.getElementById('outfit-items-container').innerHTML = '';
+        }
+        
+        // Health check on load
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                const response = await fetch('/api/health');
+                const data = await response.json();
+                console.log('✅ Health check:', data.status);
+            } catch (error) {
+                console.warn('⚠️ Health check failed:', error);
+            }
+        });
+    </script>
+</body>
+</html>

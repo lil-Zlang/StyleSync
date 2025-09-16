@@ -1,0 +1,28 @@
+# Style Weaver Requirements
+# Core Flask framework
+flask==3.0.0
+python-dotenv==1.0.0
+
+# Database clients
+weaviate-client==4.4.0
+neo4j==5.15.0
+
+# AI/ML libraries
+google-generativeai==0.3.2
+
+# Strands Agents (Note: This may need to be installed from source or specific repository)
+# strands-agents
+
+# Additional utility libraries
+requests==2.31.0
+Pillow==10.1.0
+numpy==1.24.3
+
+# Development and testing (optional)
+pytest==7.4.3
+pytest-flask==1.3.0
+black==23.11.0
+flake8==6.1.0
+
+# Production server (optional)
+gunicorn==21.2.0
