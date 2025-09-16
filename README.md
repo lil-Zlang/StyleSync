@@ -82,6 +82,7 @@ Visit `http://127.0.0.1:5000` to start styling!
    - User selects a fashion trend
    - System queries Neo4j for trend components (garments + vibes)
    - Example: "90s Revival" → [`denim jeans`, `graphic t-shirt`] + [`grunge`, `casual`]
+   - ![alt text](assets/1.png)
 
 2. **Semantic Wardrobe Search** (Weaviate)
    - Creates search concept from trend DNA
