@@ -50,35 +50,35 @@ def seed_weaviate() -> bool:
         sample_wardrobe = [
             {
                 "item_id": "top_01", 
-                "image_url": "assets/white_tee.jpg", 
+                "image_url": "https://raw.githubusercontent.com/lil-Zlang/StyleSync/main/assets/white_tee.jpg", 
                 "description": "A classic white cotton crewneck t-shirt.", 
                 "type": "top", 
                 "style_tags": ["casual", "basic", "minimalist"]
             },
             {
                 "item_id": "top_02", 
-                "image_url": "assets/black_hoodie.jpg", 
+                "image_url": "https://raw.githubusercontent.com/lil-Zlang/StyleSync/main/assets/black_hoodie.jpg", 
                 "description": "A comfortable black oversized hoodie.", 
                 "type": "top", 
                 "style_tags": ["streetwear", "casual", "cozy"]
             },
             {
                 "item_id": "bottom_01", 
-                "image_url": "assets/blue_jeans.jpg", 
+                "image_url": "https://raw.githubusercontent.com/lil-Zlang/StyleSync/main/assets/blue_jeans.jpg", 
                 "description": "Dark wash slim-fit denim jeans.", 
                 "type": "bottom", 
                 "style_tags": ["casual", "classic", "streetwear"]
             },
             {
                 "item_id": "bottom_02", 
-                "image_url": "assets/khaki_chinos.jpg", 
+                "image_url": "https://raw.githubusercontent.com/lil-Zlang/StyleSync/main/assets/khaki_chinos.jpg", 
                 "description": "Light brown khaki chinos.", 
                 "type": "bottom", 
                 "style_tags": ["business-casual", "preppy"]
             },
                 {
                 "item_id": "top_03", 
-                "image_url": "assets/hacker_tee.jpg", 
+                "image_url": "https://raw.githubusercontent.com/lil-Zlang/StyleSync/main/assets/hacker_tee.jpg", 
                 "description": "hacker tee.", 
                 "type": "top", 
                 "style_tags": ["hackers-casual", "cozy"]
